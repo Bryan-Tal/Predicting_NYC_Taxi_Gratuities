@@ -21,5 +21,5 @@ An XG Boost model comprising 100 decision trees was used to determine feature im
 
 ## Conclusion
 
-This model can benefit Taxi Drivers by letting them know if they will be tipped generously or not. In the future, adding more information on a rider’s past tipping behavior may also be beneficial in helping the stakeholder address their business problem. 
+This model offers significant benefits to taxi drivers by providing insights into the likelihood of receiving generous tips, helping them better plan their services and potentially enhance customer interactions. Additionally, incorporating historical data on riders' past tipping behavior could further refine the predictions, offering a more personalized and accurate outlook. This enhancement could enable stakeholders to develop targeted strategies, such as improving rider satisfaction or incentivizing drivers, ultimately addressing broader business objectives and fostering a more sustainable tipping culture.
 

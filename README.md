@@ -3,7 +3,7 @@ Predicting Taxi Gratuities in NYC
 
 ## Project Overview
 
-The goal of this project was to create a multiple linear regression, random forest model, and XGBoost model to predict high rider gratuity or not. This project utilized yellow taxi trips taken in New York City during 2017. The final XGBoost model performed with 83.2% accuracy and 82.3% precision determining what features were most important in separating low tippers from high tippers. Based on the model, the VendorID, fare amount, and cost of the trip were most influential in determining a generous tipper (>20%) vs a non-generous one (<20%). 
+The goal of this project was to create a random forest model, and XGBoost model to predict generous rider gratuity. This project utilized yellow taxi trips taken in New York City during 2017. The final XGBoost model performed with 83.2% accuracy and 82.3% precision determining what features were most important in separating low tippers from high tippers. Based on the model, the VendorID, fare amount, and cost of the trip were most influential in determining a generous tipper (>20%) vs a non-generous one (<20%). 
 
 ## Business Understanding 
 

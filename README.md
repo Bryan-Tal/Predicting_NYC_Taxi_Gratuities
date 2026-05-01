@@ -3,7 +3,9 @@ Predicting Taxi Gratuities in NYC
 
 ## Project Overview
 
-The goal of this project was to create a random forest model, and XGBoost model to predict generous rider gratuity. This project utilized yellow taxi trips taken in New York City during 2017. The final XGBoost model performed with 83.2% accuracy and 82.3% precision determining what features were most important in separating low tippers from high tippers. Based on the model, the VendorID, fare amount, and cost of the trip were most influential in determining a generous tipper (>20%) vs a non-generous one (<20%). 
+The goal of this project was to predict whether a New York City yellow-taxi rider would tip generously (≥ 20%). A Random Forest baseline and a tuned XGBoost model were compared on 2017 NYC TLC trip data. The final XGBoost model performed with **83.3% accuracy and 82.3% precision**, beating the Random Forest baseline by **+12.7 F1 points**. The most influential features were VendorID, fare amount, and total trip cost.
+
+The "generous" threshold was defined as `tip_amount / (total_amount - tip_amount) ≥ 0.20`. After preprocessing the class balance was **47.4% non-generous / 52.6% generous** — relatively balanced, so no SMOTE or class-weight handling was needed.
 
 ## Business Understanding 
 
@@ -15,12 +17,44 @@ The NYC Taxi and Limousine Commission data came from NYC.gov. The data consisted
 <img width="394" alt="Screenshot 2024-12-31 at 3 01 15 AM" src="https://github.com/user-attachments/assets/5e8b4ce2-0fa8-49fb-aa17-d3b20694439f" />
 
 
+## Feature Engineering
+- Extracted **day of week** and **month** from the pickup timestamp.
+- Engineered **four time-of-day binary features**: `am_rush` (06–10), `daytime` (10–16), `pm_rush` (16–20), `nighttime` (20–06).
+- One-hot encoded vendor, rate code, and time bins via `pd.get_dummies()`.
+- Dropped `tip_amount`, `tip_percent`, `payment_type`, and raw timestamps to prevent target leakage.
+
+## Methodology
+- **80/20 train/test split** (`random_state=42`).
+- **5-fold GridSearchCV refit on F1** for both Random Forest and XGBoost.
+  - Random Forest search: `max_depth ∈ [3, 4, 5]`, `n_estimators ∈ [50, 100]`, plus `max_features` and `max_samples`.
+  - XGBoost search: `max_depth ∈ [3, 4, 5]`, `learning_rate ∈ [0.1, 0.2, 0.3]`, `n_estimators ∈ [5, 10, 15]`.
+- **Best XGBoost params**: `max_depth=5`, `learning_rate=0.3`, `n_estimators=15`, `min_child_weight=5`.
+
 ## Modeling and Evaluation 
 
-An XG Boost model comprising 100 decision trees was used to determine feature importance in who would tip generously or not. The below plot shows that VendorID, fare amount, and the total cost of a trip were the Top 3 most important factors in determining a generous tipper from a non-generous one. The overall model performed with 83.2% accuracy and 82.3% precision. <img width="915" alt="Screenshot 2024-12-31 at 3 06 14 AM" src="https://github.com/user-attachments/assets/febb5a57-3300-4dbc-9a27-e3cf23ffb6b9" />
+XGBoost was the champion, beating the Random Forest baseline across every metric on the held-out test set:
 
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Random Forest (baseline) | 0.7124 | 0.6809 | 0.8254 | 0.7462 |
+| **XGBoost (champion)** | **0.8330** | **0.8233** | **0.8581** | **0.8403** |
+
+Feature importance (mean decrease in impurity) ranked **VendorID, fare_amount, and total_amount** as the top three predictors.
+
+<img width="915" alt="Screenshot 2024-12-31 at 3 06 14 AM" src="https://github.com/user-attachments/assets/febb5a57-3300-4dbc-9a27-e3cf23ffb6b9" />
+
+### Error analysis
+The confusion matrix shows **more false positives than false negatives** — the model is "optimistically generous" toward drivers, predicting good tips slightly more often than warranted. For a driver-facing app, this Type-I-leaning bias is preferable to the inverse (telling a driver to expect a good tip and being wrong is less harmful than telling them not to expect one and being wrong).
+
+## Tech Stack
+Python · Pandas · NumPy · scikit-learn · XGBoost · Matplotlib · Seaborn · Jupyter
+
+## Limitations
+- **Cash-payment survivorship bias.** NYC TLC records cash tips as $0, so the notebook drops all cash trips (`payment_type != 1`) before modeling. The model only generalizes to **credit-card riders** — likely a more affluent and tip-engaged subset of the population than NYC taxi riders overall.
+- **Single year (2017).** Temporal generalization is untested; tipping behavior likely shifted post-2020.
+- **VendorID effect unexplained.** A feature this dominant deserves causal investigation — could be driver assignment, vehicle type, or app UI differences between vendors. Flagged as future work.
+- **Black-box champion.** XGBoost predictions aren't directly interpretable. SHAP or LIME analysis would be a natural next step.
 
 ## Conclusion
 
-This model offers significant benefits to taxi drivers by providing insights into the likelihood of receiving generous tips, helping them better plan their services and potentially enhance customer interactions. Additionally, incorporating historical data on riders' past tipping behavior could further refine the predictions, offering a more personalized and accurate outlook. This enhancement could enable stakeholders to develop targeted strategies, such as improving rider satisfaction or incentivizing drivers, ultimately addressing broader business objectives and fostering a more sustainable tipping culture.
-
+This model can benefit Taxi Drivers by letting them know if they will be tipped generously or not. In the future, adding more information on a rider's past tipping behavior may also be beneficial in helping the stakeholder address their business problem.
